@@ -1272,6 +1272,18 @@ def sofa_preprocess(cfg):
                 print_info(cfg, 'strace.txt reading is done.')
                 if len(strace_list)>1:
                     strace_traces = list_to_csv_and_traces(logdir, strace_list, 'strace.csv', 'w')
+
+                filtered_strace_groups = []
+                if len(strace_traces) > 0:
+                    df_grouped = strace_traces.groupby('name')
+                    for filter in cfg.strace_filters:
+                        group = strace_traces[strace_traces['name'].str.contains(
+                            filter.keyword)]
+                        # print('group: ', group)
+                        filtered_strace_groups.append({'group': group,
+                                                'color': filter.color,
+                                                'keyword': filter.keyword})
+
     print_info(cfg,'Total strace duration: %.3lf' % total_strace_duration)
 
     # Time synchronization among BIOS Time (e.g. used by perf)  and NTP Time (e.g. NVPROF, tcpdump, etc.)
@@ -1648,6 +1660,18 @@ def sofa_preprocess(cfg):
     sofatrace.y_field = 'duration'
     sofatrace.data = net_traces
     traces.append(sofatrace)
+
+    ## filtered_strace_groups
+    if cfg.strace_filters:
+        for filtered_strace_group in filtered_strace_groups:
+            sofatrace = SOFATrace()
+            sofatrace.name = filtered_strace_group['keyword']
+            sofatrace.title = '[keyword]' + sofatrace.name
+            sofatrace.color = filtered_strace_group['color']
+            sofatrace.x_field = 'timestamp'
+            sofatrace.y_field = 'duration'
+            sofatrace.data = filtered_strace_group['group'].copy()
+            traces.append(sofatrace)
 
     if cfg.net_filters:
         for filtered_net_group in filtered_net_groups:

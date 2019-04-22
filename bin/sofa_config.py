@@ -8,6 +8,7 @@ class Filter:
 
 
 class SOFA_Config:
+    strace_filters = []
     cpu_filters = []
     gpu_filters = []
     net_filters = []

@@ -357,8 +357,14 @@ def sofa_record(command, cfg):
             p_nvtopo.terminate()
             print_info(cfg,"tried terminating nvidia-smi topo")
         if p_nvsmi != None:
-            p_nvsmi.terminate()
-            print_info(cfg,"tried terminating nvidia-smi dmon")
+            print("p_nvsmi.poll(): ", p_nvsmi.poll(), "---- for debug")
+            if p_nvsmi.poll() == None:
+                p_nvsmi.terminate()
+                print_info(cfg,"tried terminating nvidia-smi dmon")
+            else:
+                os.remove('%s/nvsmi.txt' % logdir)
+                print('remove', '%s/nvsmi.txt' % logdir, '--- for debug')
+
         if p_nvprof != None:
             p_nvprof.terminate()
             print_info(cfg,"tried terminating nvprof")
